@@ -1,0 +1,179 @@
+{
+    "sayon": {
+        "name": "bsayon",
+        "created_at": "2025-07-23T14:25:03.436852",
+        "profile": {
+            "name": "bsayon",
+            "age": 27,
+            "weight": 80.0,
+            "height": 175.0,
+            "gender": "Male",
+            "workout_preference": [
+                "Cardio",
+                "Strength Training"
+            ],
+            "workout_time": "60-90 minutes",
+            "fitness_level": "Beginner",
+            "fitness_goal": "Weight Loss",
+            "schedule": {
+                "Monday": "Not Available",
+                "Tuesday": "Not Available",
+                "Wednesday": "Not Available",
+                "Thursday": "Not Available",
+                "Friday": "Not Available",
+                "Saturday": "Not Available",
+                "Sunday": "Not Available"
+            },
+            "food_preferences": [
+                "No restrictions"
+            ],
+            "allergies": "",
+            "health_issues": "",
+            "medications": "",
+            "water_intake": 8,
+            "sleep_hours": 7,
+            "timestamp": "2025-07-23T14:25:21.178244"
+        },
+        "chat_history": [],
+        "workout_plan": null,
+        "nutrition_plan": null,
+        "last_updated": "2025-07-23T14:25:32.045321"
+    },
+    "sayon1": {
+        "name": "Sayon",
+        "created_at": "2025-07-23T14:49:07.665510",
+        "profile": {
+            "name": "Sayon",
+            "age": 25,
+            "weight": 70.0,
+            "height": 170.0,
+            "gender": "Male",
+            "workout_preference": [
+                "Cardio",
+                "Strength Training"
+            ],
+            "workout_time": "15-30 minutes",
+            "fitness_level": "Beginner",
+            "fitness_goal": "Weight Loss",
+            "schedule": {
+                "Monday": "Not Available",
+                "Tuesday": "Not Available",
+                "Wednesday": "Not Available",
+                "Thursday": "Not Available",
+                "Friday": "Not Available",
+                "Saturday": "Not Available",
+                "Sunday": "Not Available"
+            },
+            "food_preferences": [
+                "No restrictions"
+            ],
+            "allergies": "",
+            "health_issues": "",
+            "medications": "",
+            "water_intake": 8,
+            "sleep_hours": 7,
+            "timestamp": "2025-07-23T14:52:44.358650"
+        },
+        "chat_history": [
+            {
+                "type": "user_message",
+                "content": "who am i?",
+                "timestamp": "2025-07-23T14:52:57.128164"
+            },
+            {
+                "type": "assistant_message",
+                "content": "Quick Answer: You are Sayon, a 25-year-old male with a primary fitness goal of weight loss. \n\nPersonalized Recommendations: Based on your profile, it seems like you're just getting started with your fitness journey. Let's break it down:\n\n- **Weight Loss Goal**: To achieve weight loss, we'll focus on a balanced diet and regular exercise. Aim to create a caloric deficit by eating 250-500 calories less than your maintenance level. I'll provide you with a sample meal plan to get you started.\n- **Current Fitness Level**: As a beginner, we'll start with simple exercises and gradually increase intensity and difficulty. Our focus will be on cardio and strength training to help you build a strong foundation.\n- **Available Schedule**: Since you didn't specify a schedule, let's start with 2-3 times a week, 15-30 minutes per session. We can adjust this as you progress.\n\nAction Steps:\n\n1. **Dietary Plan**: I'll provide you with a sample 7-day meal plan that's balanced and tailored to your needs. This will help you create a caloric deficit and support your weight loss goal.\n2. **Exercise Routine**: We'll start with a simple cardio and strength training routine. I'll provide you with exercises and instructions on proper form.\n3. **Progress Tracking**: We'll track your progress through regular check-ins, weight measurements, and progress photos.\n\nSafety Notes:\n\n- **Listen to your body**: Rest when needed, and don't push yourself too hard, especially when starting a new exercise routine.\n- **Proper form**: Focus on proper form and technique to avoid injuries.\n\nProgress Tracking:\n\n- **Weight**: Weigh yourself once a week, and track your progress.\n- **Progress Photos**: Take progress photos every two weeks to monitor visual changes.\n- **Workout Log**: Keep a workout log to track your exercises, sets, reps, and weight used.\n\nLet's get started on your fitness journey, Sayon!",
+                "session_id": "user_305c1146",
+                "timestamp": "2025-07-23T14:52:58.557986"
+            }
+        ],
+        "workout_plan": null,
+        "nutrition_plan": null,
+        "last_updated": "2025-07-23T14:53:07.584044"
+    },
+    "sayon2": {
+        "name": "Sayon",
+        "created_at": "2025-07-23T14:51:43.901238",
+        "profile": {},
+        "chat_history": [],
+        "workout_plan": null,
+        "nutrition_plan": null,
+        "last_updated": "2025-07-23T14:51:46.476619"
+    },
+    "rr": {
+        "name": "RR",
+        "created_at": "2025-07-23T15:00:28.179149",
+        "profile": {},
+        "chat_history": [],
+        "workout_plan": null,
+        "nutrition_plan": null,
+        "last_updated": "2025-07-23T15:00:30.739709"
+    },
+    "S1": {
+        "name": "S",
+        "created_at": "2025-07-23T16:33:09.200155",
+        "profile": {},
+        "chat_history": [],
+        "workout_plan": null,
+        "nutrition_plan": null,
+        "last_updated": "2025-07-23T16:34:04.767145"
+    },
+    "D1": {
+        "name": "D",
+        "created_at": "2025-07-23T16:33:30.331517",
+        "profile": {},
+        "chat_history": [],
+        "workout_plan": null,
+        "nutrition_plan": null,
+        "last_updated": "2025-07-23T16:33:46.340298"
+    },
+    "DD1": {
+        "name": "DD",
+        "created_at": "2025-07-23T16:34:07.765158",
+        "profile": {},
+        "chat_history": [],
+        "workout_plan": null,
+        "nutrition_plan": null,
+        "last_updated": "2025-07-23T16:34:09.314755"
+    },
+    "AA1": {
+        "name": "ABC",
+        "created_at": "2025-07-23T16:35:23.066431",
+        "profile": {
+            "name": "ABC",
+            "age": 30,
+            "weight": 80.0,
+            "height": 170.0,
+            "gender": "Male",
+            "workout_preference": [
+                "Cardio",
+                "Strength Training"
+            ],
+            "workout_time": "15-30 minutes",
+            "fitness_level": "Beginner",
+            "fitness_goal": "Weight Loss",
+            "schedule": {
+                "Monday": "Not Available",
+                "Tuesday": "Not Available",
+                "Wednesday": "Not Available",
+                "Thursday": "Not Available",
+                "Friday": "Not Available",
+                "Saturday": "Not Available",
+                "Sunday": "Not Available"
+            },
+            "food_preferences": [
+                "No restrictions"
+            ],
+            "allergies": "",
+            "health_issues": "",
+            "medications": "",
+            "water_intake": 8,
+            "sleep_hours": 7,
+            "timestamp": "2025-07-23T16:35:31.355498"
+        },
+        "chat_history": [],
+        "workout_plan": null,
+        "nutrition_plan": null,
+        "last_updated": "2025-07-23T16:35:44.361385"
+    }
+}
