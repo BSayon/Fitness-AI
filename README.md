@@ -107,7 +107,8 @@ Any Docker-compatible host works. Recommended options:
 - **Google Cloud Run** — `gcloud run deploy` from `backend/`.
 - **Fly.io** — `fly launch` inside `backend/`.
 - **Railway / Render** — point them at the `backend/Dockerfile`.
-- **Vercel Fluid Compute (beta)** — supports Dockerfiles; point to `backend/Dockerfile`.
+- **Vercel Fluid Compute** — uses the root `Dockerfile.vercel` and binds the
+  FastAPI server to Vercel's `PORT` automatically.
 
 Set these environment variables on your host:
 
