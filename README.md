@@ -218,21 +218,19 @@ change dependencies in `pyproject.toml`, regenerate it with:
 uv export --no-dev --no-hashes --no-emit-project --format requirements-txt -o requirements.txt
 ```
 
-Build from the **repo root**. The public Firebase web config is inlined into the
-browser bundle at **build time**, so pass those as `--build-arg`:
+The public `NEXT_PUBLIC_FIREBASE_*` web config has defaults baked into
+`Dockerfile.vercel` (safe — it ships in the browser bundle anyway), so the build
+needs no build args:
 
 ```powershell
-docker build -f Dockerfile.vercel -t zesayro `
-  --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=$env:NEXT_PUBLIC_FIREBASE_API_KEY `
-  --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$env:NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN `
-  --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID=$env:NEXT_PUBLIC_FIREBASE_PROJECT_ID `
-  --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=$env:NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET `
-  --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=$env:NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID `
-  --build-arg NEXT_PUBLIC_FIREBASE_APP_ID=$env:NEXT_PUBLIC_FIREBASE_APP_ID `
-  .
+docker build -f Dockerfile.vercel -t zesayro .
 ```
 
-Run it, passing the **backend** secrets at run time:
+> Pointing at a different Firebase project? Override any default with
+> `--build-arg NEXT_PUBLIC_FIREBASE_...=...`.
+
+Run it, passing the **secrets** at run time (these are never baked into the
+image):
 
 ```powershell
 docker run --rm -p 3000:3000 `
@@ -258,9 +256,11 @@ Deploy the **one image** to any Docker-capable host (Cloud Run, Fly.io, Railway,
 Render, HuggingFace Spaces, Vercel container/Fluid Compute, …). The container
 binds to the injected `$PORT`.
 
-- **Build args** (baked in): all six `NEXT_PUBLIC_FIREBASE_*` values.
-- **Run-time env** (secrets): `GROQ_API_KEY`, `FIREBASE_PROJECT_ID`,
-  `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`.
+- **Baked in** (public, default build args): the `NEXT_PUBLIC_FIREBASE_*` web
+  config. Override with `--build-arg` only for a different Firebase project.
+- **Run-time env — set these as secrets in your host (e.g. Vercel project env
+  vars), never in the image:** `GROQ_API_KEY`, `FIREBASE_PRIVATE_KEY`,
+  `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PROJECT_ID`.
 - After it's live, add the public URL to
   **Firebase Auth → Settings → Authorized domains**.
 
