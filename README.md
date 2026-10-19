@@ -30,18 +30,24 @@ chat history, and metric logs) is created and updated **by the backend** using
 the **Firebase Cloud Firestore Admin APIs**.
 
 ```
-┌────────────────┐   Firebase ID token    ┌─────────────────────────┐
-│  Next.js (UI)  │ ─────────────────────▶ │  FastAPI backend        │
-│   on Vercel    │ ◀───────────────────── │  • verifies ID token    │
-└──────┬─────────┘   JSON responses       │  • src/ LangChain agent │
-       │ Google sign-in                   │  • Firestore Admin SDK  │
-       ▼                                   └───────────┬─────────────┘
-  Firebase Auth                                        │ reads / writes
-                                                        ▼
-                                              Firestore  users/{uid}
-                                      { profile, workoutPlan,
-                                        nutritionPlan, chatHistory, metrics }
+                         Single container (one $PORT)
+┌──────────────────────────────────────────────────────────────┐
+│  Browser ──▶ Next.js (UI + proxy) ──/api,/health──▶ FastAPI   │
+│   Google      • serves the frontend        (127.0.0.1:8000)   │
+│   sign-in     • rewrites /api → backend     • verifies token  │
+│      │                                      • src/ LangChain  │
+│      ▼                                      • Firestore Admin │
+│  Firebase Auth                                     │          │
+└────────────────────────────────────────────────────┼─────────┘
+                                                      ▼ reads / writes
+                                            Firestore  users/{uid}
+                                    { profile, workoutPlan,
+                                      nutritionPlan, chatHistory, metrics }
 ```
+
+> Both services run in **one image** ([Dockerfile.vercel](Dockerfile.vercel)):
+> Next.js is public on `$PORT`, and it proxies `/api` + `/health` to the FastAPI
+> backend on an internal port — so the browser only ever sees one origin.
 
 > Unlike a typical client-only Firebase app, the **frontend never writes to
 > Firestore directly** — every read/write goes through the authenticated
@@ -195,49 +201,63 @@ Then in the browser at <http://localhost:3000>:
 
 ---
 
-## 6. Run the backend in Docker (optional, local)
+## 6. Single-container Docker build (frontend + backend together)
 
-The image is built with **uv** from `pyproject.toml` + `uv.lock`, from the
-**repo root** so `src/` is included:
+`Dockerfile.vercel` builds **one image that runs both** the Next.js frontend and
+the FastAPI backend. Only the frontend port is exposed; the browser calls
+same-origin `/api/...`, which Next.js proxies to the backend running on
+`127.0.0.1:8000` inside the container (see the `rewrites()` in
+`frontend/next.config.js`).
+
+Build from the **repo root**. The public Firebase web config is inlined into the
+browser bundle at **build time**, so pass those as `--build-arg`:
 
 ```powershell
-docker build -f Dockerfile.vercel -t zesayro-backend .
+docker build -f Dockerfile.vercel -t zesayro `
+  --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=$env:NEXT_PUBLIC_FIREBASE_API_KEY `
+  --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$env:NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN `
+  --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID=$env:NEXT_PUBLIC_FIREBASE_PROJECT_ID `
+  --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=$env:NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET `
+  --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=$env:NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID `
+  --build-arg NEXT_PUBLIC_FIREBASE_APP_ID=$env:NEXT_PUBLIC_FIREBASE_APP_ID `
+  .
+```
 
-# Pass the backend env vars (loaded from your root .env, or set inline):
-docker run --rm -p 8000:8000 `
+Run it, passing the **backend** secrets at run time:
+
+```powershell
+docker run --rm -p 3000:3000 `
   -e GROQ_API_KEY=$env:GROQ_API_KEY `
   -e FIREBASE_PROJECT_ID=$env:FIREBASE_PROJECT_ID `
   -e FIREBASE_CLIENT_EMAIL=$env:FIREBASE_CLIENT_EMAIL `
   -e FIREBASE_PRIVATE_KEY=$env:FIREBASE_PRIVATE_KEY `
-  -e ALLOWED_ORIGINS=http://localhost:3000 `
-  zesayro-backend
+  zesayro
 ```
 
-> Tip: `docker run --env-file .env ...` loads everything at once. Note that
-> `--env-file` does not support quoted multi-line values, so keep
-> `FIREBASE_PRIVATE_KEY` on one line with literal `\n` sequences (the backend
-> converts them back to newlines).
+Open <http://localhost:3000>. Notes:
+
+- The container listens on `$PORT` (default 3000); set `PORT` to match your host.
+- `FIREBASE_PRIVATE_KEY` must be one line with literal `\n` (the backend
+  converts them to newlines). `docker run --env-file` doesn't support quoted
+  multi-line values, so prefer `-e` flags for the private key.
+- No `ALLOWED_ORIGINS` / CORS config is needed — the browser only ever talks to
+  the single frontend origin; the frontend proxies to the backend server-side.
 
 ## 7. Deployment
 
-**Frontend → Vercel**
+Deploy the **one image** to any Docker-capable host (Cloud Run, Fly.io, Railway,
+Render, HuggingFace Spaces, Vercel container/Fluid Compute, …). The container
+binds to the injected `$PORT`.
 
-1. Push the repo to GitHub and import it in Vercel.
-2. Set **Root Directory** to `frontend`.
-3. Add every `NEXT_PUBLIC_*` env var, and set `NEXT_PUBLIC_API_BASE_URL` to the
-   public URL of your deployed backend.
-4. Deploy (Next.js is auto-detected).
+- **Build args** (baked in): all six `NEXT_PUBLIC_FIREBASE_*` values.
+- **Run-time env** (secrets): `GROQ_API_KEY`, `FIREBASE_PROJECT_ID`,
+  `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`.
+- After it's live, add the public URL to
+  **Firebase Auth → Settings → Authorized domains**.
 
-**Backend → Docker host** (`Dockerfile.vercel` at the repo root)
-
-- Vercel Fluid Compute / HuggingFace Spaces / Cloud Run / Fly.io / Railway —
-  anything that runs a Dockerfile. The container binds to the injected `$PORT`
-  (defaults to 8000).
-- Required env: `GROQ_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`,
-  `FIREBASE_PRIVATE_KEY`, `ALLOWED_ORIGINS` (include your Vercel URL).
-
-> After the frontend is live, add its URL to the backend `ALLOWED_ORIGINS` and
-> to **Firebase Auth → Settings → Authorized domains**.
+> Local development still runs the two processes separately (section 5) with
+> `NEXT_PUBLIC_API_BASE_URL=http://localhost:8000`. The single-origin proxy is
+> used only in the container, where `NEXT_PUBLIC_API_BASE_URL` is empty.
 
 ## 8. API reference
 
