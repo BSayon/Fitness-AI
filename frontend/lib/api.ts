@@ -31,6 +31,9 @@ async function authedFetch(path: string, init: RequestInit = {}) {
   return res.json();
 }
 
+// --------------------------------------------------------------------------- //
+// Types
+// --------------------------------------------------------------------------- //
 export type UserProfile = {
   name?: string;
   age: number;
@@ -51,25 +54,106 @@ export type UserProfile = {
   timestamp?: string;
 };
 
+export type MetricLog = {
+  date: string;
+  weight?: number | null;
+  water_glasses?: number | null;
+  sleep_hours?: number | null;
+  workouts_completed?: number | null;
+  calories?: number | null;
+  note?: string;
+};
+
+export type DashboardStats = {
+  bmi?: number | null;
+  goal?: string;
+  startingWeight?: number;
+  latestWeight?: number;
+  weightChange?: number;
+  totalWorkouts?: number;
+  daysTracked?: number;
+  avgSleep?: number;
+  avgWater?: number;
+  streak?: number;
+};
+
+export type DashboardData = {
+  profile: UserProfile | null;
+  workoutPlan: string | null;
+  nutritionPlan: string | null;
+  metrics: MetricLog[];
+  stats: DashboardStats;
+};
+
+export type ChatMessage = { role: "user" | "assistant"; content: string; ts: number };
+
 export type GenerateResponse = { response: string; session_id: string };
 
-export function generateWorkout(profile: UserProfile) {
+// --------------------------------------------------------------------------- //
+// Identity & profile
+// --------------------------------------------------------------------------- //
+export function getMe() {
+  return authedFetch("/api/me") as Promise<{
+    uid: string;
+    email?: string;
+    name?: string;
+    picture?: string;
+  }>;
+}
+
+export function getProfile() {
+  return authedFetch("/api/profile") as Promise<{ profile: UserProfile | null }>;
+}
+
+export function saveProfile(profile: UserProfile) {
+  return authedFetch("/api/profile", {
+    method: "POST",
+    body: JSON.stringify({ profile }),
+  }) as Promise<{ ok: boolean; profile: UserProfile }>;
+}
+
+// --------------------------------------------------------------------------- //
+// Plans & chat (persisted server-side)
+// --------------------------------------------------------------------------- //
+export function generateWorkout(profile?: UserProfile) {
   return authedFetch("/api/workout", {
     method: "POST",
-    body: JSON.stringify({ profile }),
+    body: JSON.stringify(profile ? { profile } : {}),
   }) as Promise<GenerateResponse>;
 }
 
-export function generateNutrition(profile: UserProfile) {
+export function generateNutrition(profile?: UserProfile) {
   return authedFetch("/api/nutrition", {
     method: "POST",
-    body: JSON.stringify({ profile }),
+    body: JSON.stringify(profile ? { profile } : {}),
   }) as Promise<GenerateResponse>;
 }
 
-export function generateChat(profile: UserProfile, message: string) {
+export function sendChat(message: string, profile?: UserProfile) {
   return authedFetch("/api/chat", {
     method: "POST",
-    body: JSON.stringify({ profile, message }),
+    body: JSON.stringify(profile ? { profile, message } : { message }),
   }) as Promise<GenerateResponse>;
+}
+
+export function getChatHistory() {
+  return authedFetch("/api/chat/history") as Promise<{ chatHistory: ChatMessage[] }>;
+}
+
+// --------------------------------------------------------------------------- //
+// Health-goal tracking & dashboard
+// --------------------------------------------------------------------------- //
+export function getDashboard() {
+  return authedFetch("/api/dashboard") as Promise<DashboardData>;
+}
+
+export function listMetrics() {
+  return authedFetch("/api/metrics") as Promise<{ metrics: MetricLog[] }>;
+}
+
+export function addMetric(entry: MetricLog) {
+  return authedFetch("/api/metrics", {
+    method: "POST",
+    body: JSON.stringify(entry),
+  }) as Promise<{ ok: boolean; metrics: MetricLog[] }>;
 }

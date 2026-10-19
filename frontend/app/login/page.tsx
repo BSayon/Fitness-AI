@@ -47,8 +47,8 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md">
       <div className="card">
-        <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Sign in to access your personalized plan.
         </p>
 
@@ -74,7 +74,7 @@ export default function LoginPage() {
             />
           </div>
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
               {error}
             </p>
           )}
@@ -83,10 +83,10 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="my-4 flex items-center gap-3 text-xs text-slate-400">
-          <div className="h-px flex-1 bg-slate-200" />
+        <div className="my-4 flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500">
+          <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
           OR
-          <div className="h-px flex-1 bg-slate-200" />
+          <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
         </div>
 
         <button
@@ -97,7 +97,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
           Don&apos;t have an account?{" "}
           <Link href="/register" className="font-semibold text-brand-600">
             Create one

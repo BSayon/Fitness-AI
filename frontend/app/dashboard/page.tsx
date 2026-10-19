@@ -5,16 +5,14 @@ import { useEffect, useState } from "react";
 import { Dumbbell, Salad, Download, Sparkles } from "lucide-react";
 import AuthGate from "@/components/AuthGate";
 import Markdown from "@/components/Markdown";
+import GoalTracker from "@/components/GoalTracker";
 import { useAuth } from "@/lib/auth-context";
-import {
-  getUserRecord,
-  savePlan,
-  type UserRecord,
-} from "@/lib/firestore";
 import {
   generateNutrition,
   generateWorkout,
-  type UserProfile,
+  getDashboard,
+  type DashboardData,
+  type MetricLog,
 } from "@/lib/api";
 
 export default function DashboardPage() {
@@ -44,20 +42,21 @@ function downloadText(name: string, content: string) {
 
 function DashboardInner() {
   const { user } = useAuth();
-  const [record, setRecord] = useState<UserRecord | null>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loadingWorkout, setLoadingWorkout] = useState(false);
   const [loadingNutrition, setLoadingNutrition] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
-    getUserRecord(user.uid).then(setRecord);
-  }, [user]);
+    getDashboard()
+      .then(setData)
+      .catch((err) => setError(err?.message ?? "Failed to load dashboard"));
+  }, []);
 
-  const profile: UserProfile | undefined = record?.profile;
+  const profile = data?.profile;
 
   async function handleGenerate(kind: "workout" | "nutrition") {
-    if (!user || !profile) return;
+    if (!profile) return;
     setError(null);
     if (kind === "workout") setLoadingWorkout(true);
     else setLoadingNutrition(true);
@@ -66,12 +65,7 @@ function DashboardInner() {
         kind === "workout"
           ? await generateWorkout(profile)
           : await generateNutrition(profile);
-      await savePlan(
-        user.uid,
-        kind === "workout" ? "workoutPlan" : "nutritionPlan",
-        res.response
-      );
-      setRecord((prev) =>
+      setData((prev) =>
         prev
           ? {
               ...prev,
@@ -89,18 +83,33 @@ function DashboardInner() {
     }
   }
 
-  if (!record) {
-    return <div className="text-slate-500">Loading…</div>;
+  function handleLogged(metrics: MetricLog[]) {
+    // Re-fetch to get recomputed stats from the backend.
+    getDashboard()
+      .then(setData)
+      .catch(() =>
+        setData((prev) => (prev ? { ...prev, metrics } : prev))
+      );
+  }
+
+  if (!data) {
+    return error ? (
+      <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+        {error}
+      </div>
+    ) : (
+      <div className="text-slate-500 dark:text-slate-400">Loading…</div>
+    );
   }
 
   if (!profile) {
     return (
       <div className="card text-center">
         <Sparkles className="mx-auto h-8 w-8 text-brand-500" />
-        <h2 className="mt-3 text-xl font-semibold text-slate-900">
+        <h2 className="mt-3 text-xl font-semibold text-slate-900 dark:text-slate-100">
           Let&apos;s get started
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Fill in your profile so we can build a plan tailored to you.
         </p>
         <Link href="/profile" className="btn-primary mt-4">
@@ -121,10 +130,10 @@ function DashboardInner() {
       <section className="card">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Hi {user?.displayName ?? "there"} 👋
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+              Hi {user?.displayName ?? profile.name ?? "there"} 👋
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Here&apos;s a snapshot of your fitness profile.
             </p>
           </div>
@@ -153,10 +162,10 @@ function DashboardInner() {
           ].map((s) => (
             <div
               key={s.label}
-              className="rounded-xl border border-slate-100 bg-slate-50 p-3"
+              className="rounded-xl border border-white/40 bg-white/40 p-3 dark:border-white/10 dark:bg-white/5"
             >
-              <div className="text-xs uppercase text-slate-500">{s.label}</div>
-              <div className="mt-1 text-lg font-semibold text-slate-900">
+              <div className="text-xs uppercase text-slate-500 dark:text-slate-400">{s.label}</div>
+              <div className="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {s.value}
               </div>
             </div>
@@ -165,10 +174,16 @@ function DashboardInner() {
       </section>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
           {error}
         </div>
       )}
+
+      <GoalTracker
+        stats={data.stats}
+        metrics={data.metrics}
+        onLogged={handleLogged}
+      />
 
       <section className="grid gap-6 md:grid-cols-2">
         <div className="card">
@@ -177,7 +192,7 @@ function DashboardInner() {
               <div className="rounded-xl bg-brand-500/10 p-2 text-brand-600">
                 <Dumbbell className="h-5 w-5" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Workout plan
               </h2>
             </div>
@@ -188,26 +203,24 @@ function DashboardInner() {
             >
               {loadingWorkout
                 ? "Generating…"
-                : record.workoutPlan
+                : data.workoutPlan
                 ? "Regenerate"
                 : "Generate"}
             </button>
           </div>
           <div className="mt-4 max-h-[500px] overflow-auto">
-            {record.workoutPlan ? (
+            {data.workoutPlan ? (
               <>
-                <Markdown content={record.workoutPlan} />
+                <Markdown content={data.workoutPlan} />
                 <button
-                  onClick={() =>
-                    downloadText("workout_plan.md", record.workoutPlan!)
-                  }
+                  onClick={() => downloadText("workout_plan.md", data.workoutPlan!)}
                   className="btn-secondary mt-4 !py-1.5 !px-3"
                 >
                   <Download className="h-4 w-4" /> Download
                 </button>
               </>
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 No plan yet — generate one to get started.
               </p>
             )}
@@ -220,7 +233,7 @@ function DashboardInner() {
               <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
                 <Salad className="h-5 w-5" />
               </div>
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Nutrition plan
               </h2>
             </div>
@@ -231,18 +244,18 @@ function DashboardInner() {
             >
               {loadingNutrition
                 ? "Generating…"
-                : record.nutritionPlan
+                : data.nutritionPlan
                 ? "Regenerate"
                 : "Generate"}
             </button>
           </div>
           <div className="mt-4 max-h-[500px] overflow-auto">
-            {record.nutritionPlan ? (
+            {data.nutritionPlan ? (
               <>
-                <Markdown content={record.nutritionPlan} />
+                <Markdown content={data.nutritionPlan} />
                 <button
                   onClick={() =>
-                    downloadText("nutrition_plan.md", record.nutritionPlan!)
+                    downloadText("nutrition_plan.md", data.nutritionPlan!)
                   }
                   className="btn-secondary mt-4 !py-1.5 !px-3"
                 >
@@ -250,7 +263,7 @@ function DashboardInner() {
                 </button>
               </>
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 No plan yet — generate one to get personalized guidance.
               </p>
             )}

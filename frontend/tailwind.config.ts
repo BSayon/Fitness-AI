@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,16 +10,21 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50: "#fff4ec",
-          100: "#ffe5d0",
-          200: "#ffc59d",
-          300: "#ffa16a",
-          400: "#ff7f3e",
-          500: "#ff6b35",
-          600: "#e0521f",
-          700: "#b53f18",
-          800: "#823017",
-          900: "#4d1e0e",
+          50: "#ecfffb",
+          100: "#cffef5",
+          200: "#99fcea",
+          300: "#54f3dc",
+          400: "#1fe0c8",
+          500: "#06c5ae",
+          600: "#039e8f",
+          700: "#097d73",
+          800: "#0d635d",
+          900: "#10524d",
+        },
+        accent: {
+          400: "#38e0ff",
+          500: "#1ccaf0",
+          600: "#0aa6d6",
         },
       },
       fontFamily: {
@@ -26,7 +32,11 @@ const config: Config = {
       },
       backgroundImage: {
         "gradient-brand":
-          "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ff6b35 100%)",
+          "linear-gradient(135deg, #2bf5b8 0%, #0ad3c0 45%, #1ccaf0 100%)",
+      },
+      boxShadow: {
+        glass: "0 8px 32px rgba(0, 0, 0, 0.12)",
+        "glass-dark": "0 8px 32px rgba(0, 0, 0, 0.45)",
       },
     },
   },

@@ -1,18 +1,40 @@
-FROM python:3.11-slim
+# syntax=docker/dockerfile:1
+
+# ---------------------------------------------------------------------------
+# Zesayro backend image (FastAPI + shared src/ AI engine).
+# Dependencies are resolved from pyproject.toml + uv.lock with uv, on the
+# Python version the project targets (requires-python >= 3.14).
+# Build from the REPOSITORY ROOT so src/ is in the build context:
+#   docker build -f Dockerfile.vercel -t zesayro-backend .
+# ---------------------------------------------------------------------------
+FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PYTHONPATH=/app \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/app/.venv
 
 WORKDIR /app
 
+# Build tooling for any packages without prebuilt wheels (e.g. grpcio).
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY backend/requirements.txt ./requirements.txt
-RUN pip install --upgrade pip && pip install -r requirements.txt
+# Install dependencies first for better layer caching (only the lockfile).
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
 
-COPY backend/app/ ./app/
+# Put the virtualenv on PATH so uvicorn runs directly.
+ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port \"${PORT:-80}\""]
+# App code: the FastAPI backend (backend/app) imports the AI engine from src/.
+COPY src/ ./src/
+COPY backend/ ./backend/
+COPY main.py ./
+
+# Bind to the platform-injected $PORT (defaults to 8000 locally).
+CMD ["sh", "-c", "exec uvicorn backend.app.main:app --host 0.0.0.0 --port \"${PORT:-8000}\""]

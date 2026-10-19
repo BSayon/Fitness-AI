@@ -52,8 +52,8 @@ export default function RegisterPage() {
   return (
     <div className="mx-auto max-w-md">
       <div className="card">
-        <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Create your account</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Start building your personalized fitness plan.
         </p>
 
@@ -100,7 +100,7 @@ export default function RegisterPage() {
             </div>
           </div>
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
               {error}
             </p>
           )}
@@ -109,10 +109,10 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div className="my-4 flex items-center gap-3 text-xs text-slate-400">
-          <div className="h-px flex-1 bg-slate-200" />
+        <div className="my-4 flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500">
+          <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
           OR
-          <div className="h-px flex-1 bg-slate-200" />
+          <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
         </div>
 
         <button
@@ -123,7 +123,7 @@ export default function RegisterPage() {
           Continue with Google
         </button>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
           Already have an account?{" "}
           <Link href="/login" className="font-semibold text-brand-600">
             Sign in

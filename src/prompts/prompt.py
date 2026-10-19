@@ -1,16 +1,4 @@
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_groq.chat_models import ChatGroq
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.chat_message_histories import ChatMessageHistory
-from dotenv import load_dotenv
-from typing import Dict, Any
-import os
-
-load_dotenv()
-
-groq_api_key = os.getenv('GROQ_API_KEY')
-
-system_prompt = """
+SYSTEM_PROMPT = """
 You are a certified fitness expert specializing in nutrition science, exercise physiology, and holistic wellness. Your mission is to provide evidence-based, personalized fitness guidance that helps users achieve sustainable health and fitness goals.
 SCOPE OF EXPERTISE:
 IN-SCOPE: Nutrition, exercise science, workout programming, wellness, injury prevention, fitness equipment, supplementation, body composition, recovery strategies, sports performance, and mental health as it relates to fitness.
@@ -68,94 +56,38 @@ Suggest progressive advancement pathways
 Reference reputable sources when discussing complex topics
 Encourage consistency over perfection
 
-User question: {input}
 """
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", system_prompt),
-        MessagesPlaceholder("chat_history"),
-        ("human", "{input}")
-    ]
-)
-
-llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0.5,
-    max_tokens=1000,
-    api_key=groq_api_key
-)
-
-chain = prompt | llm
-
-messages = {}
-
-def get_session(session_id : str) -> ChatMessageHistory:
-    if session_id not in messages:
-        messages[session_id] = ChatMessageHistory()
-    return messages[session_id]
-
-conversation_bot = RunnableWithMessageHistory(
-    chain,
-    get_session_history=get_session,
-    input_messages_key='input',
-    history_messages_key='chat_history'
-)
-
-def generate_ai_response(user_prompt : str, session_id : str) -> str :
-    response = conversation_bot.invoke(
-        {
-            'input' : user_prompt
-        },
-        config = {
-            "configurable" : {
-                "session_id" : session_id
-            }
-        }
-    )
-    # print(response)
-    # print(f"messages - {messages}")
-    return response.content
-
-def create_user_profile_prompt(profile: Dict[str, Any]) -> str:
-    height_m = profile['height'] / 100
-    bmi = profile['weight'] / (height_m ** 2)
-    
-    available_days = [day for day, time in profile['schedule'].items() if time != "Not Available"]
-    schedule_text = ", ".join([f"{day}: {profile['schedule'][day]}" for day in available_days])
-    
-    prompt = f"""
+USER_PROFILE_TEMPLATE = """
 USER PROFILE INFORMATION:
 =======================
 Personal Details:
-- Age: {profile['age']} years
-- Gender: {profile['gender']}
-- Weight: {profile['weight']} kg
-- Height: {profile['height']} cm
+- Age: {age} years
+- Gender: {gender}
+- Weight: {weight} kg
+- Height: {height} cm
 - BMI: {bmi:.1f}
-- Current Fitness Level: {profile['fitness_level']}
-- Primary Fitness Goal: {profile['fitness_goal']}
+- Current Fitness Level: {fitness_level}
+- Primary Fitness Goal: {fitness_goal}
 
 Workout Preferences:
-- Preferred Activities: {', '.join(profile['workout_preference'])}
-- Preferred Duration: {profile['workout_time']}
+- Preferred Activities: {activities}
+- Preferred Duration: {workout_time}
 - Available Schedule: {schedule_text}
 
 Nutrition & Health:
-- Dietary Preferences: {', '.join(profile['food_preferences'])}
-- Food Allergies/Intolerances: {profile.get('allergies', 'None specified')}
-- Health Issues: {profile.get('health_issues', 'None specified')}
-- Current Medications: {profile.get('medications', 'None specified')}
-- Daily Water Intake: {profile['water_intake']} glasses
-- Average Sleep: {profile['sleep_hours']} hours
+- Dietary Preferences: {dietary_preferences}
+- Food Allergies/Intolerances: {allergies}
+- Health Issues: {health_issues}
+- Current Medications: {medications}
+- Daily Water Intake: {water_intake} glasses
+- Average Sleep: {sleep_hours} hours
 
-Profile Created: {profile['timestamp']}
+Profile Created: {timestamp}
 =======================
 """
-    return prompt
 
-def create_workout_type_prompt(user_profile: Dict[str, Any]) -> str:
-    return f"""
+WORKOUT_PLAN_TEMPLATE = """
 {user_profile}
 
 TASK: Generate a personalized workout plan based on the above user profile.
@@ -170,8 +102,7 @@ Please provide:
 Format the response in a clear, easy-to-follow structure.
 """
 
-def create_nutrition_type_prompt(user_profile: Dict[str, Any]) -> str:
-    return f"""
+NUTRITION_PLAN_TEMPLATE = """
 {user_profile}
 
 TASK: Generate a personalized nutrition plan based on the above user profile.
@@ -187,8 +118,7 @@ Please provide:
 Format the response in a clear, easy-to-follow structure.
 """
 
-def create_conversation_chat_prompt(user_profile: Dict[str, Any], additional_message: str) -> str:
-    return f"""
+CONVERSATION_CHAT_TEMPLATE = """
 {user_profile}
 
 CONTEXT: The user is asking a follow-up question about their fitness or nutrition plan.

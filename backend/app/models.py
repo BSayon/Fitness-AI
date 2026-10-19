@@ -26,11 +26,41 @@ class UserProfile(BaseModel):
     timestamp: Optional[str] = None
 
 
-class GenerateRequest(BaseModel):
+class ProfileRequest(BaseModel):
     profile: UserProfile
+
+
+class GenerateRequest(BaseModel):
+    profile: Optional[UserProfile] = None
     message: Optional[str] = ""
 
 
 class GenerateResponse(BaseModel):
     response: str
     session_id: str
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+    ts: int
+
+
+class MetricLog(BaseModel):
+    """A single daily health-tracking entry."""
+
+    date: str  # ISO date (YYYY-MM-DD)
+    weight: Optional[float] = Field(default=None, ge=20, le=400)
+    water_glasses: Optional[int] = Field(default=None, ge=0, le=30)
+    sleep_hours: Optional[float] = Field(default=None, ge=0, le=24)
+    workouts_completed: Optional[int] = Field(default=None, ge=0, le=20)
+    calories: Optional[int] = Field(default=None, ge=0, le=20000)
+    note: Optional[str] = ""
+
+
+class DashboardData(BaseModel):
+    profile: Optional[UserProfile] = None
+    workoutPlan: Optional[str] = None
+    nutritionPlan: Optional[str] = None
+    metrics: List[MetricLog] = []
+    stats: Dict[str, object] = {}

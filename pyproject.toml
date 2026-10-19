@@ -1,0 +1,14 @@
+[project]
+name = "fitness-ai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "dotenv>=0.9.9",
+    "fastapi>=0.143.5",
+    "firebase-admin>=7.7.0",
+    "langchain>=1.4.6",
+    "langchain-groq>=1.1.3",
+    "uvicorn[standard]>=0.54.0",
+]

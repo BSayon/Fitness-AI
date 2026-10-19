@@ -10,7 +10,6 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import {
   ReactNode,
   createContext,
@@ -20,7 +19,7 @@ import {
   useState,
 } from "react";
 
-import { auth, db } from "./firebase";
+import { auth } from "./firebase";
 
 type AuthContextValue = {
   user: User | null;
@@ -32,18 +31,6 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-async function ensureUserDoc(user: User) {
-  const ref = doc(db, "users", user.uid);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      email: user.email,
-      name: user.displayName ?? "",
-      createdAt: serverTimestamp(),
-    });
-  }
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -64,15 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async register(email, password, name) {
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         if (name) await updateProfile(cred.user, { displayName: name });
-        await ensureUserDoc(cred.user);
       },
       async login(email, password) {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
-        await ensureUserDoc(cred.user);
+        await signInWithEmailAndPassword(auth, email, password);
       },
       async loginWithGoogle() {
-        const cred = await signInWithPopup(auth, new GoogleAuthProvider());
-        await ensureUserDoc(cred.user);
+        await signInWithPopup(auth, new GoogleAuthProvider());
       },
       async logout() {
         await signOut(auth);

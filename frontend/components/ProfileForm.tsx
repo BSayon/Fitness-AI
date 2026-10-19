@@ -86,7 +86,7 @@ function Chips({
             className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
               active
                 ? "border-brand-500 bg-brand-500 text-white"
-                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
             {opt}
@@ -175,7 +175,7 @@ export default function ProfileForm({
             </select>
           </div>
         </div>
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
           Computed BMI: <span className="font-semibold">{bmi.toFixed(1)}</span>
         </p>
       </div>
@@ -250,8 +250,8 @@ export default function ProfileForm({
             const val = p.schedule[day] ?? "Not Available";
             const available = val !== "Not Available";
             return (
-              <div key={day} className="rounded-xl border border-slate-200 p-3">
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+              <div key={day} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
+                <label className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                   <input
                     type="checkbox"
                     checked={available}

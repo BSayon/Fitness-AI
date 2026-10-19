@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme-context";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "AI Fitness Coach",
-  description: "Your personalized fitness and nutrition companion powered by AI.",
+  title: "Zesayro — AI fitness, personalized",
+  description:
+    "Zesayro builds personalized workout and nutrition plans and tracks your progress with an AI coach.",
+  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({
@@ -14,12 +17,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-screen font-sans antialiased">
-        <AuthProvider>
-          <Navbar />
-          <main className="mx-auto w-full max-w-6xl px-4 py-8">{children}</main>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Navbar />
+            <main className="mx-auto w-full max-w-6xl px-4 py-8">{children}</main>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
