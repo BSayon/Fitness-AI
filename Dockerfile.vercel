@@ -56,6 +56,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
     PORT=3000 \
     BACKEND_PORT=8000 \
     BACKEND_INTERNAL_URL=http://127.0.0.1:8000
@@ -68,7 +70,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Python deps via pip (pinned requirements for reproducible builds).
+# Python deps via pip into an isolated virtualenv (on PATH above). Installing
+# into a venv — rather than the system interpreter as root — avoids the pip
+# "running as root" warning and keeps the runtime cleanly isolated.
+RUN python -m venv "$VIRTUAL_ENV"
 COPY requirements.txt ./
 RUN pip install --upgrade pip && pip install -r requirements.txt
 

@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme-context";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Zesayro — AI fitness, personalized",
@@ -21,11 +22,14 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
-      <body className="min-h-screen font-sans antialiased">
+      <body className="flex min-h-screen flex-col font-sans antialiased">
         <ThemeProvider>
           <AuthProvider>
             <Navbar />
-            <main className="mx-auto w-full max-w-6xl px-4 py-8">{children}</main>
+            <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+              {children}
+            </main>
+            <Footer />
           </AuthProvider>
         </ThemeProvider>
       </body>
