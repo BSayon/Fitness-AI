@@ -2,7 +2,8 @@
 
 # ===========================================================================
 # Zesayro — SINGLE container running BOTH the Next.js frontend and the
-# FastAPI backend. Build from the REPOSITORY ROOT:
+# FastAPI backend. Python deps are installed with pip from requirements.txt.
+# Build from the REPOSITORY ROOT:
 #
 #   docker build -f Dockerfile.vercel -t zesayro `
 #     --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=... `
@@ -13,9 +14,8 @@
 #     --build-arg NEXT_PUBLIC_FIREBASE_APP_ID=... .
 #
 # The NEXT_PUBLIC_* Firebase values are inlined into the browser bundle at
-# BUILD time, so they must be passed as --build-arg. Backend secrets
-# (GROQ_API_KEY, FIREBASE_PROJECT_ID/CLIENT_EMAIL/PRIVATE_KEY, ...) are passed
-# at RUN time via --env-file .env or -e flags.
+# BUILD time (pass as --build-arg). Backend secrets (GROQ_API_KEY,
+# FIREBASE_PROJECT_ID/CLIENT_EMAIL/PRIVATE_KEY) are passed at RUN time.
 # ===========================================================================
 
 # ---- Stage 1: build the Next.js frontend --------------------------------
@@ -46,37 +46,29 @@ ENV NEXT_PUBLIC_FIREBASE_API_KEY=$NEXT_PUBLIC_FIREBASE_API_KEY \
     NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 RUN npm run build
 
-# ---- Stage 2: uv binary --------------------------------------------------
-FROM ghcr.io/astral-sh/uv:latest AS uv
-
-# ---- Stage 3: final runtime (Node + uv-managed Python 3.14) -------------
-FROM node:22-bookworm-slim
-
-COPY --from=uv /uv /usr/local/bin/uv
+# ---- Stage 2: final runtime (Python 3.14 + Node.js) ---------------------
+FROM python:3.14-slim-trixie
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
-    UV_NO_PROGRESS=1 \
-    UV_COMPILE_BYTECODE=1 \
-    UV_PYTHON_INSTALL_DIR=/opt/python \
-    UV_PROJECT_ENVIRONMENT=/app/.venv \
-    VIRTUAL_ENV=/app/.venv \
-    PATH="/app/.venv/bin:$PATH" \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PORT=3000 \
     BACKEND_PORT=8000 \
     BACKEND_INTERNAL_URL=http://127.0.0.1:8000
 
 WORKDIR /app
 
+# Node.js runtime so the frontend can run with `next start`.
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    nodejs \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Python deps (uv fetches a managed CPython 3.14 as required by pyproject.toml).
-COPY pyproject.toml uv.lock ./
-RUN uv python install 3.14 \
-    && uv sync --frozen --no-dev --no-install-project
+# Python deps via pip (pinned requirements for reproducible builds).
+COPY requirements.txt ./
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Backend + shared AI engine.
 COPY src ./src

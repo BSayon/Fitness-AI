@@ -73,9 +73,11 @@ Fitness-AI/
 │   ├── app/                  # / , /login, /register, /profile, /dashboard, /chat
 │   ├── components/           # Navbar, ProfileForm, GoalTracker, Markdown, AuthGate
 │   └── lib/                  # firebase.ts, auth-context.tsx, api.ts
-├── pyproject.toml            # Python deps (source of truth) + uv.lock
+├── pyproject.toml            # Python deps for local dev (uv); uv.lock pins them
+├── requirements.txt          # pinned deps for the Docker image (pip install)
 ├── firestore.rules           # per-user access rules
-├── Dockerfile.vercel         # backend image (uv + pyproject/uv.lock, ships src/ + backend/)
+├── Dockerfile.vercel         # single image: Next.js + FastAPI (pip install, one $PORT)
+├── docker-entrypoint.sh      # runs backend (internal) + frontend (public) together
 ├── main.py                   # local launcher: `uv run python main.py`
 └── .env                      # single shared env for frontend + backend (gitignored)
 ```
@@ -208,6 +210,13 @@ the FastAPI backend. Only the frontend port is exposed; the browser calls
 same-origin `/api/...`, which Next.js proxies to the backend running on
 `127.0.0.1:8000` inside the container (see the `rewrites()` in
 `frontend/next.config.js`).
+
+Python deps are installed with **pip** from `requirements.txt` (pinned). If you
+change dependencies in `pyproject.toml`, regenerate it with:
+
+```powershell
+uv export --no-dev --no-hashes --no-emit-project --format requirements-txt -o requirements.txt
+```
 
 Build from the **repo root**. The public Firebase web config is inlined into the
 browser bundle at **build time**, so pass those as `--build-arg`:
