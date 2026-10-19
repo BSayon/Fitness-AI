@@ -24,9 +24,24 @@ const nextConfig = {
   // and these rewrites are simply never used.
   async rewrites() {
     const backend = process.env.BACKEND_INTERNAL_URL || "http://127.0.0.1:8000";
+    const fbProject =
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "fitness-ai-project-2f54f";
+    const fbAuthHandler = `https://${fbProject}.firebaseapp.com`;
     return [
       { source: "/api/:path*", destination: `${backend}/api/:path*` },
       { source: "/health", destination: `${backend}/health` },
+      // Firebase Auth helper proxy: serve the sign-in handler from THIS app's
+      // own domain instead of "<project>.firebaseapp.com". Set
+      // NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN to your domain (e.g. zesayro.com) to
+      // route sign-in through it. Harmless when the auth domain is unchanged.
+      {
+        source: "/__/auth/:path*",
+        destination: `${fbAuthHandler}/__/auth/:path*`,
+      },
+      {
+        source: "/__/firebase/:path*",
+        destination: `${fbAuthHandler}/__/firebase/:path*`,
+      },
     ];
   },
 };

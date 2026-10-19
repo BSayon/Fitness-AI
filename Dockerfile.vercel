@@ -33,7 +33,7 @@ COPY frontend/ ./
 # The API base URL is left empty so the browser uses same-origin "/api/..."
 # which Next.js proxies to the in-container backend.
 ARG NEXT_PUBLIC_FIREBASE_API_KEY="AIzaSyB8M6Ff2KxjNY9nyH0Ch7QELeZPBBs0VgY"
-ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="fitness-ai-project-2f54f.firebaseapp.com"
+ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="zesayro.com"
 ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID="fitness-ai-project-2f54f"
 ARG NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="fitness-ai-project-2f54f.firebasestorage.app"
 ARG NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="945360888886"
