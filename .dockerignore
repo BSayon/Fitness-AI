@@ -1,0 +1,35 @@
+# Build context trimming for Dockerfile.vercel (built from repo root).
+
+# Secrets — never send to the Docker daemon / image
+.env
+.env.*
+serviceAccountKey.json
+appconfig.json
+secrets/
+
+# Python envs / caches
+.venv/
+**/__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Frontend (not part of the backend image)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# VCS / tooling / docs
+.git/
+.gitignore
+.vscode/
+.idea/
+*.md
+logo/
+test.ipynb
+
+# Local data
+*.db
+*.sqlite3

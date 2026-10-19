@@ -2,39 +2,42 @@
 
 # ---------------------------------------------------------------------------
 # Zesayro backend image (FastAPI + shared src/ AI engine).
-# Dependencies are resolved from pyproject.toml + uv.lock with uv, on the
-# Python version the project targets (requires-python >= 3.14).
 # Build from the REPOSITORY ROOT so src/ is in the build context:
 #   docker build -f Dockerfile.vercel -t zesayro-backend .
+# Dependencies come from pyproject.toml + uv.lock (requires-python >= 3.14).
 # ---------------------------------------------------------------------------
-FROM ghcr.io/astral-sh/uv:python3.14-bookworm-slim
+FROM ghcr.io/astral-sh/uv:latest AS uv
+
+FROM python:3.14-slim-trixie
+
+COPY --from=uv /uv /usr/local/bin/uv
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
+    UV_NO_PROGRESS=1 \
     UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    UV_PROJECT_ENVIRONMENT=/app/.venv
+    VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-# Build tooling for any packages without prebuilt wheels (e.g. grpcio).
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+RUN groupadd --system app \
+    && useradd --system --gid app --home-dir /app --no-create-home app
 
 # Install dependencies first for better layer caching (only the lockfile).
 COPY pyproject.toml uv.lock ./
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-install-project
-
-# Put the virtualenv on PATH so uvicorn runs directly.
-ENV PATH="/app/.venv/bin:$PATH"
+RUN uv sync --frozen --no-dev --no-install-project
 
 # App code: the FastAPI backend (backend/app) imports the AI engine from src/.
-COPY src/ ./src/
-COPY backend/ ./backend/
+COPY src ./src
+COPY backend ./backend
 COPY main.py ./
 
-# Bind to the platform-injected $PORT (defaults to 8000 locally).
-CMD ["sh", "-c", "exec uvicorn backend.app.main:app --host 0.0.0.0 --port \"${PORT:-8000}\""]
+RUN chown -R app:app /app
+USER app
+
+EXPOSE 8000
+
+# Bind to the platform-injected $PORT (defaults to 8000 locally / on Vercel).
+CMD ["sh", "-c", "exec uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
