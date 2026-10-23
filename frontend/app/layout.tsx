@@ -5,6 +5,7 @@ import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme-context";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Zesayro — AI fitness, personalized",
@@ -34,6 +35,7 @@ export default function RootLayout({
           </AuthProvider>
         </ThemeProvider>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
